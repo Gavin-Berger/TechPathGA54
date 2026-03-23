@@ -23,6 +23,14 @@ const examplePrompts = [
   "What entry-level cloud jobs are hiring in Atlanta?",
 ];
 
+const formatResponse = (text: string) => {
+  return text
+    .replace(/\*\*/g, "")
+    .replace(/^- /gm, "• ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+};
+
 export default function App() {
   const [profileType, setProfileType] = useState<string>("Beginner");
   const [interestArea, setInterestArea] = useState<string>("Cybersecurity");
@@ -223,7 +231,9 @@ export default function App() {
                 <Text style={styles.responseTitle}>Career Insight</Text>
               </View>
 
-              <Text style={styles.responseText}>{response}</Text>
+              <Text style={styles.responseText}>
+                {formatResponse(response)}
+              </Text>
             </View>
           )}
         </SectionCard>
@@ -458,7 +468,8 @@ const styles = StyleSheet.create({
   },
   responseText: {
     fontSize: 15,
-    lineHeight: 24,
+    lineHeight: 26,
     color: "#334155",
+    letterSpacing: 0.2,
   },
 });
