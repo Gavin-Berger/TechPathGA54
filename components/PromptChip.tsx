@@ -11,7 +11,7 @@ export default function PromptChip({ label, onPress }: PromptChipProps) {
     <TouchableOpacity
       style={styles.chip}
       onPress={onPress}
-      activeOpacity={0.85}
+      activeOpacity={0.88}
     >
       <Text style={styles.chipText}>{label}</Text>
     </TouchableOpacity>
@@ -20,19 +20,19 @@ export default function PromptChip({ label, onPress }: PromptChipProps) {
 
 const styles = StyleSheet.create({
   chip: {
-    backgroundColor: "#e0ecff",
+    backgroundColor: "#E0ECFF",
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: "#2563eb",
+    borderColor: "#93C5FD",
     marginRight: 8,
     marginBottom: 8,
   },
   chipText: {
-    color: "#2563eb",
+    color: "#1D4ED8",
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: "700",
     lineHeight: 18,
   },
 });

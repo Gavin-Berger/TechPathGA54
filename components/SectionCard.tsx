@@ -1,58 +1,52 @@
 import React from "react";
-import { View, Text, StyleSheet, ViewStyle } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
 type SectionCardProps = {
-  children: React.ReactNode;
-  title?: string;
+  title: string;
   subtitle?: string;
-  style?: ViewStyle;
+  children: React.ReactNode;
 };
 
 export default function SectionCard({
-  children,
   title,
   subtitle,
-  style,
+  children,
 }: SectionCardProps) {
   return (
-    <View style={[styles.card, style]}>
-      {(title || subtitle) && (
-        <View style={styles.header}>
-          {title ? <Text style={styles.title}>{title}</Text> : null}
-          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-        </View>
-      )}
-      {children}
+    <View style={styles.card}>
+      <Text style={styles.title}>{title}</Text>
+      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+      <View style={styles.content}>{children}</View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
-    padding: 18,
-    borderRadius: 22,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 24,
+    padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.06,
+    borderColor: "#D6E0EA",
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
-  },
-  header: {
-    marginBottom: 6,
+    elevation: 4,
   },
   title: {
-    fontSize: 19,
+    fontSize: 22,
     fontWeight: "800",
-    color: "#0f172a",
+    color: "#0F172A",
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    lineHeight: 19,
-    color: "#64748b",
+    marginTop: 8,
+    fontSize: 14,
+    lineHeight: 22,
+    color: "#64748B",
+  },
+  content: {
+    marginTop: 18,
   },
 });
