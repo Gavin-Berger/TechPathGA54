@@ -9,12 +9,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   StatusBar,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import SectionCard from "./components/SectionCard";
 import PromptChip from "./components/PromptChip";
 import { getCareerAdvice } from "./services/openai";
@@ -32,7 +28,6 @@ const COLORS = {
   accent: "#F59E0B",
   accentSoft: "#FEF3C7",
   border: "#D6E0EA",
-  success: "#10B981",
   danger: "#EF4444",
 };
 
@@ -43,14 +38,24 @@ const examplePrompts = [
   "What should a beginner in data analytics learn first in Georgia?",
 ];
 
+const profileOptions = [
+  "Beginner",
+  "Career-changer",
+  "Experienced professional",
+];
+
+const interestOptions = [
+  "Software Development",
+  "Cybersecurity",
+  "Data / AI",
+  "Cloud / IT",
+  "Networking",
+];
+
 const MAX_QUESTION_LENGTH = 280;
 
 const formatResponse = (text: string) => {
-  return text
-    .replace(/\*\*/g, "")
-    .replace(/^-\s+/gm, "• ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return text.replace(/\n{3,}/g, "\n\n").trim();
 };
 
 type FormattedLine =
@@ -62,14 +67,6 @@ type FormattedLine =
 const structureResponse = (text: string): FormattedLine[] => {
   const lines = formatResponse(text).split("\n");
 
-  const knownHeadings = [
-    "Recommended Path",
-    "Georgia Employers",
-    "Education or Certifications",
-    "Salary Outlook",
-    "Next Steps",
-  ];
-
   return lines.map((raw) => {
     const line = raw.trim();
 
@@ -77,21 +74,73 @@ const structureResponse = (text: string): FormattedLine[] => {
       return { type: "spacer", text: "" };
     }
 
-    if (knownHeadings.includes(line)) {
-      return { type: "heading", text: line };
+    if (line.startsWith("**") && line.endsWith("**")) {
+      return {
+        type: "heading",
+        text: line.replace(/\*\*/g, ""),
+      };
     }
 
-    if (line.startsWith("•")) {
-      return { type: "bullet", text: line.replace(/^•\s*/, "") };
+    if (line.startsWith("- ")) {
+      return {
+        type: "bullet",
+        text: line.replace(/^- /, "").replace(/\*\*/g, ""),
+      };
     }
 
-    return { type: "paragraph", text: line };
+    return {
+      type: "paragraph",
+      text: line.replace(/\*\*/g, ""),
+    };
   });
 };
 
+type OptionGroupProps = {
+  label: string;
+  options: string[];
+  selected: string;
+  onSelect: (value: string) => void;
+};
+
+function OptionGroup({ label, options, selected, onSelect }: OptionGroupProps) {
+  return (
+    <View style={styles.optionGroup}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.optionWrap}>
+        {options.map((option) => {
+          const isSelected = option === selected;
+
+          return (
+            <TouchableOpacity
+              key={option}
+              style={[
+                styles.optionChip,
+                isSelected && styles.optionChipSelected,
+              ]}
+              onPress={() => onSelect(option)}
+              activeOpacity={0.9}
+            >
+              <Text
+                style={[
+                  styles.optionChipText,
+                  isSelected && styles.optionChipTextSelected,
+                ]}
+              >
+                {option}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 export default function App() {
   const [profileType, setProfileType] = useState<string>("Beginner");
-  const [interestArea, setInterestArea] = useState<string>("Cybersecurity");
+  const [interestArea, setInterestArea] = useState<string>(
+    "Software Development",
+  );
   const [question, setQuestion] = useState<string>("");
   const [response, setResponse] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -151,238 +200,196 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
-      <KeyboardAvoidingView
-        style={styles.keyboardWrap}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            style={styles.scroll}
-            contentContainerStyle={styles.content}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.hero}>
-              <View style={styles.heroTopRow}>
-                <View style={styles.logoBadge}>
-                  <Text style={styles.logoBadgeText}>GA</Text>
-                </View>
-
-                <View style={styles.heroPill}>
-                  <Text style={styles.heroPillText}>
-                    Georgia Tech Career Navigator
-                  </Text>
-                </View>
-              </View>
-
-              <Text style={styles.heroTitle}>TechPath GA</Text>
-
-              <Text style={styles.heroSubtitle}>
-                Personalized guidance for software, cyber, cloud, networking,
-                and data careers across Georgia.
-              </Text>
-
-              <Text style={styles.heroCaption}>
-                Built for Atlanta, built for growth.
-              </Text>
-
-              <View style={styles.heroStatsRow}>
-                <View style={styles.heroStat}>
-                  <Text style={styles.heroStatValue}>Georgia</Text>
-                  <Text style={styles.heroStatLabel}>Location Scope</Text>
-                </View>
-                <View style={styles.heroStat}>
-                  <Text style={styles.heroStatValue}>Tech Only</Text>
-                  <Text style={styles.heroStatLabel}>Career Scope</Text>
-                </View>
-              </View>
+        <View style={styles.hero}>
+          <View style={styles.heroTopRow}>
+            <View style={styles.logoBadge}>
+              <Text style={styles.logoBadgeText}>GA</Text>
             </View>
 
-            <SectionCard
-              title="Build Your Path"
-              subtitle="Choose your background, pick an area of interest, and ask a Georgia-focused tech career question."
+            <View style={styles.heroPill}>
+              <Text style={styles.heroPillText}>
+                Georgia Tech Career Navigator
+              </Text>
+            </View>
+          </View>
+
+          <Text style={styles.heroTitle}>TechPath GA</Text>
+
+          <Text style={styles.heroSubtitle}>
+            Personalized guidance for software, cyber, cloud, networking, and
+            data careers across Georgia.
+          </Text>
+
+          <Text style={styles.heroCaption}>
+            Built for Atlanta, built for growth.
+          </Text>
+        </View>
+
+        <SectionCard
+          title="Build Your Path"
+          subtitle="Choose your background, pick an area of interest, and ask a Georgia-focused tech career question."
+        >
+          <OptionGroup
+            label="Profile Type"
+            options={profileOptions}
+            selected={profileType}
+            onSelect={setProfileType}
+          />
+
+          <OptionGroup
+            label="Interest Area"
+            options={interestOptions}
+            selected={interestArea}
+            onSelect={setInterestArea}
+          />
+
+          <View style={styles.labelRow}>
+            <Text style={styles.label}>Question</Text>
+            <Text style={styles.counter}>
+              {question.length}/{MAX_QUESTION_LENGTH}
+            </Text>
+          </View>
+
+          <TextInput
+            style={[styles.input, errorText ? styles.inputError : null]}
+            placeholder="Ex: How do I become a cybersecurity analyst in Georgia?"
+            placeholderTextColor="#94A3B8"
+            value={question}
+            onChangeText={(text) =>
+              setQuestion(text.slice(0, MAX_QUESTION_LENGTH))
+            }
+            multiline
+            textAlignVertical="top"
+          />
+
+          {errorText ? <Text style={styles.errorText}>{errorText}</Text> : null}
+
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={[
+                styles.secondaryButton,
+                loading ? styles.buttonDisabled : null,
+              ]}
+              onPress={handleClear}
+              disabled={loading}
+              activeOpacity={0.9}
             >
-              <Text style={styles.label}>Profile Type</Text>
-              <View style={styles.pickerWrap}>
-                <Picker
-                  selectedValue={profileType}
-                  onValueChange={(itemValue) => setProfileType(itemValue)}
-                  dropdownIconColor={COLORS.text}
-                >
-                  <Picker.Item label="Beginner" value="Beginner" />
-                  <Picker.Item label="Career-changer" value="Career-changer" />
-                  <Picker.Item
-                    label="Experienced professional"
-                    value="Experienced professional"
-                  />
-                </Picker>
-              </View>
+              <Text style={styles.secondaryButtonText}>Clear</Text>
+            </TouchableOpacity>
 
-              <Text style={styles.label}>Interest Area</Text>
-              <View style={styles.pickerWrap}>
-                <Picker
-                  selectedValue={interestArea}
-                  onValueChange={(itemValue) => setInterestArea(itemValue)}
-                  dropdownIconColor={COLORS.text}
-                >
-                  <Picker.Item
-                    label="Software Development"
-                    value="Software Development"
-                  />
-                  <Picker.Item label="Cybersecurity" value="Cybersecurity" />
-                  <Picker.Item label="Data / AI" value="Data / AI" />
-                  <Picker.Item label="Cloud / IT" value="Cloud / IT" />
-                  <Picker.Item label="Networking" value="Networking" />
-                </Picker>
-              </View>
-
-              <View style={styles.labelRow}>
-                <Text style={styles.label}>Question</Text>
-                <Text style={styles.counter}>
-                  {question.length}/{MAX_QUESTION_LENGTH}
-                </Text>
-              </View>
-
-              <TextInput
-                style={[styles.input, errorText ? styles.inputError : null]}
-                placeholder="Ex: How do I become a cybersecurity analyst in Georgia?"
-                placeholderTextColor="#94A3B8"
-                value={question}
-                onChangeText={(text) =>
-                  setQuestion(text.slice(0, MAX_QUESTION_LENGTH))
-                }
-                multiline
-                returnKeyType="done"
-                textAlignVertical="top"
-              />
-
-              {errorText ? (
-                <Text style={styles.errorText}>{errorText}</Text>
-              ) : null}
-
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={[
-                    styles.primaryButton,
-                    loading ? styles.buttonDisabled : null,
-                  ]}
-                  onPress={handleSubmit}
-                  disabled={loading}
-                  activeOpacity={0.9}
-                >
-                  {loading ? (
-                    <ActivityIndicator color={COLORS.white} />
-                  ) : (
-                    <Text style={styles.primaryButtonText}>Get Advice</Text>
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.secondaryButton,
-                    loading ? styles.buttonDisabled : null,
-                  ]}
-                  onPress={handleClear}
-                  disabled={loading}
-                  activeOpacity={0.9}
-                >
-                  <Text style={styles.secondaryButtonText}>Clear</Text>
-                </TouchableOpacity>
-              </View>
-            </SectionCard>
-
-            <SectionCard
-              title="Quick Prompts"
-              subtitle="Tap a suggestion to instantly load a sample question."
-            >
-              <View style={styles.promptGrid}>
-                {examplePrompts.map((item, index) => (
-                  <PromptChip
-                    key={index}
-                    label={item}
-                    onPress={() => handleExamplePress(item)}
-                  />
-                ))}
-              </View>
-            </SectionCard>
-
-            <SectionCard
-              title="Career Insight"
-              subtitle="Your answer appears here in a cleaner, phone-friendly format."
+            <TouchableOpacity
+              style={[
+                styles.primaryButton,
+                loading ? styles.buttonDisabled : null,
+              ]}
+              onPress={handleSubmit}
+              disabled={loading}
+              activeOpacity={0.9}
             >
               {loading ? (
-                <View style={styles.loadingWrap}>
-                  <View style={styles.loadingOrb}>
-                    <ActivityIndicator size="large" color={COLORS.accent} />
-                  </View>
-                  <Text style={styles.loadingTitle}>Generating guidance</Text>
-                  <Text style={styles.loadingText}>
-                    Building a Georgia-specific response for your selected path.
-                  </Text>
-                </View>
-              ) : !responseHasContent ? (
-                <View style={styles.emptyState}>
-                  <View style={styles.emptyIcon}>
-                    <Text style={styles.emptyIconText}>↗</Text>
-                  </View>
-                  <Text style={styles.emptyTitle}>Ready when you are</Text>
-                  <Text style={styles.emptySubtitle}>
-                    Ask a question about a Georgia technology career path to get
-                    started.
-                  </Text>
-                </View>
+                <ActivityIndicator color={COLORS.white} />
               ) : (
-                <View style={styles.responseCard}>
-                  <View style={styles.responseHeader}>
-                    <View style={styles.responseHeaderBadge}>
-                      <Text style={styles.responseHeaderBadgeText}>AI</Text>
-                    </View>
-                    <View>
-                      <Text style={styles.responseTitle}>Career Insight</Text>
-                      <Text style={styles.responseSubtitle}>
-                        Tailored to your profile and interest area
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.responseBody}>
-                    {formattedResponse.map((line, index) => {
-                      if (line.type === "heading") {
-                        return (
-                          <Text key={index} style={styles.responseHeading}>
-                            {line.text}
-                          </Text>
-                        );
-                      }
-
-                      if (line.type === "bullet") {
-                        return (
-                          <View key={index} style={styles.bulletRow}>
-                            <Text style={styles.bulletDot}>•</Text>
-                            <Text style={styles.bulletText}>{line.text}</Text>
-                          </View>
-                        );
-                      }
-
-                      if (line.type === "spacer") {
-                        return (
-                          <View key={index} style={styles.responseSpacer} />
-                        );
-                      }
-
-                      return (
-                        <Text key={index} style={styles.responseText}>
-                          {line.text}
-                        </Text>
-                      );
-                    })}
-                  </View>
-                </View>
+                <Text style={styles.primaryButtonText}>Get Advice</Text>
               )}
-            </SectionCard>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+            </TouchableOpacity>
+          </View>
+        </SectionCard>
+
+        <SectionCard
+          title="Quick Prompts"
+          subtitle="Tap a suggestion to instantly load a sample question."
+        >
+          <View style={styles.promptGrid}>
+            {examplePrompts.map((item, index) => (
+              <PromptChip
+                key={index}
+                label={item}
+                onPress={() => handleExamplePress(item)}
+              />
+            ))}
+          </View>
+        </SectionCard>
+
+        <SectionCard
+          title="Career Insight"
+          subtitle="Your answer appears here in a cleaner, phone-friendly format."
+        >
+          {loading ? (
+            <View style={styles.loadingWrap}>
+              <View style={styles.loadingOrb}>
+                <ActivityIndicator size="large" color={COLORS.accent} />
+              </View>
+              <Text style={styles.loadingTitle}>Generating guidance</Text>
+              <Text style={styles.loadingText}>
+                Building a Georgia-specific response for your selected path.
+              </Text>
+            </View>
+          ) : !responseHasContent ? (
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIcon}>
+                <Text style={styles.emptyIconText}>↗</Text>
+              </View>
+              <Text style={styles.emptyTitle}>Ready when you are</Text>
+              <Text style={styles.emptySubtitle}>
+                Ask a question about a Georgia technology career path to get
+                started.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.responseCard}>
+              <View style={styles.responseHeader}>
+                <View style={styles.responseHeaderBadge}>
+                  <Text style={styles.responseHeaderBadgeText}>AI</Text>
+                </View>
+                <View>
+                  <Text style={styles.responseTitle}>Career Insight</Text>
+                  <Text style={styles.responseSubtitle}>
+                    Tailored to your profile and interest area
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.responseBody}>
+                {formattedResponse.map((line, index) => {
+                  if (line.type === "heading") {
+                    return (
+                      <Text key={index} style={styles.responseHeading}>
+                        {line.text}
+                      </Text>
+                    );
+                  }
+
+                  if (line.type === "bullet") {
+                    return (
+                      <View key={index} style={styles.bulletRow}>
+                        <Text style={styles.bulletDot}>•</Text>
+                        <Text style={styles.bulletText}>{line.text}</Text>
+                      </View>
+                    );
+                  }
+
+                  if (line.type === "spacer") {
+                    return <View key={index} style={styles.responseSpacer} />;
+                  }
+
+                  return (
+                    <Text key={index} style={styles.responseText}>
+                      {line.text}
+                    </Text>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+        </SectionCard>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -391,9 +398,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.bg,
-  },
-  keyboardWrap: {
-    flex: 1,
   },
   scroll: {
     flex: 1,
@@ -466,38 +470,43 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginTop: 8,
   },
-  heroStatsRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 20,
-  },
-  heroStat: {
-    flex: 1,
-    backgroundColor: COLORS.surfaceSoft,
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.06)",
-  },
-  heroStatValue: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: "800",
-  },
-  heroStatLabel: {
-    color: "#94A3B8",
-    marginTop: 4,
-    fontSize: 12,
-    fontWeight: "600",
-  },
 
+  optionGroup: {
+    marginTop: 12,
+  },
   label: {
     fontSize: 14,
     fontWeight: "700",
     color: COLORS.text,
-    marginBottom: 8,
-    marginTop: 12,
+    marginBottom: 10,
   },
+  optionWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  optionChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 999,
+    backgroundColor: "#EEF2FF",
+    borderWidth: 1,
+    borderColor: "#C7D2FE",
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  optionChipSelected: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  optionChipText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1E3A8A",
+  },
+  optionChipTextSelected: {
+    color: COLORS.white,
+  },
+
   labelRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -509,13 +518,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     color: COLORS.muted,
-  },
-  pickerWrap: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 16,
-    overflow: "hidden",
-    backgroundColor: "#F8FAFC",
   },
   input: {
     minHeight: 132,
@@ -544,17 +546,12 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
   primaryButton: {
-    flex: 1,
+    flex: 2,
     minHeight: 52,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: COLORS.primary,
-    shadowColor: COLORS.primary,
-    shadowOpacity: 0.28,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
   },
   secondaryButton: {
     flex: 1,
