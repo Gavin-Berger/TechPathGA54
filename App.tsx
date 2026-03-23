@@ -13,13 +13,14 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import SectionCard from "./components/SectionCard";
+import PromptChip from "./components/PromptChip";
 import { getCareerAdvice } from "./services/openai";
 
 const examplePrompts = [
   "How do I become a cybersecurity analyst in Georgia?",
   "What certifications are valued in Atlanta tech jobs?",
-  "What Georgia schools are good for software development?",
-  "What is the best nursing career in Florida?",
+  "What Georgia schools are best for software development?",
+  "What entry-level cloud jobs are hiring in Atlanta?",
 ];
 
 export default function App() {
@@ -69,17 +70,50 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>TechPath GA</Text>
-        <Text style={styles.subtitle}>Georgia Tech Career Advisor</Text>
+      <StatusBar barStyle="light-content" />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.hero}>
+          <View style={styles.heroTopRow}>
+            <View style={styles.brandBadge}>
+              <Text style={styles.brandBadgeText}>GA</Text>
+            </View>
+            <View style={styles.heroTag}>
+              <Text style={styles.heroTagText}>Career Advisor</Text>
+            </View>
+          </View>
 
-        <SectionCard>
+          <Text style={styles.heroTitle}>TechPath GA</Text>
+          <Text style={styles.heroSubtitle}>
+            Georgia-focused guidance for tech careers, certifications, degree
+            paths, and employer-aligned next steps.
+          </Text>
+
+          <View style={styles.heroStatsRow}>
+            <View style={styles.heroStatCard}>
+              <Text style={styles.heroStatValue}>Georgia</Text>
+              <Text style={styles.heroStatLabel}>Scope Locked</Text>
+            </View>
+            <View style={styles.heroStatCard}>
+              <Text style={styles.heroStatValue}>CS + Tech</Text>
+              <Text style={styles.heroStatLabel}>Career Focus</Text>
+            </View>
+          </View>
+        </View>
+
+        <SectionCard
+          title="Build Your Path"
+          subtitle="Choose your background and ask a Georgia-specific tech career question."
+        >
           <Text style={styles.label}>Profile Type</Text>
           <View style={styles.pickerWrap}>
             <Picker
               selectedValue={profileType}
               onValueChange={(itemValue) => setProfileType(itemValue)}
+              dropdownIconColor="#1f2937"
             >
               <Picker.Item label="Beginner" value="Beginner" />
               <Picker.Item label="Career-changer" value="Career-changer" />
@@ -95,6 +129,7 @@ export default function App() {
             <Picker
               selectedValue={interestArea}
               onValueChange={(itemValue) => setInterestArea(itemValue)}
+              dropdownIconColor="#1f2937"
             >
               <Picker.Item
                 label="Software Development"
@@ -107,52 +142,72 @@ export default function App() {
             </Picker>
           </View>
 
-          <Text style={styles.label}>Ask a Georgia tech career question</Text>
+          <Text style={styles.label}>Question</Text>
           <TextInput
             style={styles.input}
-            placeholder="Example: How do I become a cybersecurity analyst in Georgia?"
-            placeholderTextColor="#888"
+            placeholder="Ex: How do I become a cybersecurity analyst in Georgia?"
+            placeholderTextColor="#94a3b8"
             value={question}
             onChangeText={setQuestion}
             multiline
           />
 
-          <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit}>
-            <Text style={styles.primaryButtonText}>Get Advice</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={handleClear}
-          >
-            <Text style={styles.secondaryButtonText}>Clear</Text>
-          </TouchableOpacity>
-        </SectionCard>
-
-        <SectionCard>
-          <Text style={styles.sectionTitle}>Quick Examples</Text>
-          {examplePrompts.map((item, index) => (
+          <View style={styles.buttonRow}>
             <TouchableOpacity
-              key={index}
-              style={styles.exampleButton}
-              onPress={() => handleExamplePress(item)}
+              style={[styles.actionButton, styles.primaryButton]}
+              onPress={handleSubmit}
             >
-              <Text style={styles.exampleText}>{item}</Text>
+              <Text style={styles.primaryButtonText}>Get Advice</Text>
             </TouchableOpacity>
-          ))}
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.secondaryButton]}
+              onPress={handleClear}
+            >
+              <Text style={styles.secondaryButtonText}>Clear</Text>
+            </TouchableOpacity>
+          </View>
         </SectionCard>
 
-        <SectionCard>
-          <Text style={styles.sectionTitle}>Response</Text>
+        <SectionCard
+          title="Quick Prompts"
+          subtitle="Tap a suggested question to fill the input instantly."
+        >
+          <View style={styles.promptGrid}>
+            {examplePrompts.map((item, index) => (
+              <PromptChip
+                key={index}
+                label={item}
+                onPress={() => handleExamplePress(item)}
+              />
+            ))}
+          </View>
+        </SectionCard>
+
+        <SectionCard
+          title="Response"
+          subtitle="Structured Georgia-specific guidance will appear here."
+        >
           {loading ? (
             <View style={styles.loadingWrap}>
-              <ActivityIndicator size="large" />
+              <ActivityIndicator size="large" color="#2563eb" />
               <Text style={styles.loadingText}>Generating advice...</Text>
             </View>
+          ) : response ? (
+            <View style={styles.responseBox}>
+              <Text style={styles.responseText}>{response}</Text>
+            </View>
           ) : (
-            <Text style={styles.responseText}>
-              {response || "Your Georgia career guidance will appear here."}
-            </Text>
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIcon}>
+                <Text style={styles.emptyIconText}>↗</Text>
+              </View>
+              <Text style={styles.emptyTitle}>Ready when you are</Text>
+              <Text style={styles.emptySubtitle}>
+                Select a profile, choose an interest area, and ask a question to
+                get started.
+              </Text>
+            </View>
           )}
         </SectionCard>
       </ScrollView>
@@ -163,100 +218,203 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f4f7fb",
+    backgroundColor: "#edf2f7",
+  },
+  scroll: {
+    flex: 1,
   },
   content: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: 18,
+    paddingBottom: 36,
   },
-  title: {
+  hero: {
+    backgroundColor: "#0f172a",
+    borderRadius: 24,
+    padding: 22,
+    marginBottom: 16,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+  },
+  heroTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  brandBadge: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#2563eb",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  brandBadgeText: {
+    color: "#ffffff",
+    fontWeight: "800",
+    fontSize: 16,
+  },
+  heroTag: {
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+  },
+  heroTagText: {
+    color: "#e2e8f0",
+    fontWeight: "700",
+    fontSize: 12,
+  },
+  heroTitle: {
+    color: "#ffffff",
     fontSize: 30,
     fontWeight: "800",
-    textAlign: "center",
-    marginTop: 8,
-    color: "#111827",
+    marginTop: 18,
   },
-  subtitle: {
-    textAlign: "center",
-    color: "#4b5563",
-    marginBottom: 20,
+  heroSubtitle: {
+    color: "#cbd5e1",
     fontSize: 15,
+    lineHeight: 22,
+    marginTop: 10,
+  },
+  heroStatsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 18,
+  },
+  heroStatCard: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  heroStatValue: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  heroStatLabel: {
+    color: "#94a3b8",
+    marginTop: 4,
+    fontSize: 12,
+    fontWeight: "600",
   },
   label: {
+    fontSize: 14,
     fontWeight: "700",
-    marginBottom: 6,
-    marginTop: 10,
-    color: "#111827",
+    color: "#0f172a",
+    marginBottom: 8,
+    marginTop: 12,
   },
   pickerWrap: {
     borderWidth: 1,
-    borderColor: "#d9dfe8",
-    borderRadius: 10,
+    borderColor: "#dbe3ef",
+    borderRadius: 14,
     overflow: "hidden",
-    backgroundColor: "#fafafa",
+    backgroundColor: "#f8fafc",
   },
   input: {
+    minHeight: 130,
     borderWidth: 1,
-    borderColor: "#d9dfe8",
-    borderRadius: 10,
-    padding: 12,
-    minHeight: 120,
+    borderColor: "#dbe3ef",
+    borderRadius: 14,
+    backgroundColor: "#f8fafc",
+    paddingHorizontal: 14,
+    paddingVertical: 14,
     textAlignVertical: "top",
-    backgroundColor: "#fafafa",
-    color: "#111827",
+    fontSize: 15,
+    color: "#0f172a",
+  },
+  buttonRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 18,
+  },
+  actionButton: {
+    flex: 1,
+    paddingVertical: 15,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
   },
   primaryButton: {
-    marginTop: 16,
-    backgroundColor: "#1f6feb",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
+    backgroundColor: "#2563eb",
+  },
+  secondaryButton: {
+    backgroundColor: "#e2e8f0",
   },
   primaryButtonText: {
     color: "#ffffff",
     fontWeight: "800",
-    fontSize: 16,
-  },
-  secondaryButton: {
-    marginTop: 10,
-    backgroundColor: "#6b7280",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
+    fontSize: 15,
   },
   secondaryButtonText: {
-    color: "#ffffff",
+    color: "#0f172a",
     fontWeight: "800",
-    fontSize: 16,
+    fontSize: 15,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    marginBottom: 10,
-    color: "#111827",
-  },
-  exampleButton: {
-    padding: 12,
-    backgroundColor: "#eef4ff",
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  exampleText: {
-    color: "#1e3a5f",
-    fontWeight: "600",
+  promptGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
   },
   loadingWrap: {
+    paddingVertical: 28,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 20,
   },
   loadingText: {
-    marginTop: 10,
-    color: "#4b5563",
+    marginTop: 12,
+    color: "#475569",
+    fontWeight: "600",
+  },
+  responseBox: {
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 16,
+    padding: 16,
   },
   responseText: {
     fontSize: 15,
-    lineHeight: 22,
-    color: "#222222",
+    lineHeight: 24,
+    color: "#111827",
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 26,
+    paddingHorizontal: 12,
+  },
+  emptyIcon: {
+    width: 54,
+    height: 54,
+    borderRadius: 16,
+    backgroundColor: "#e0ecff",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  emptyIconText: {
+    fontSize: 24,
+    color: "#2563eb",
+    fontWeight: "800",
+  },
+  emptyTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  emptySubtitle: {
+    marginTop: 8,
+    textAlign: "center",
+    color: "#64748b",
+    lineHeight: 21,
   },
 });
