@@ -20,19 +20,19 @@ export default function PromptChip({ label, onPress }: PromptChipProps) {
 
 const styles = StyleSheet.create({
   chip: {
-    backgroundColor: "#f8fafc",
-    borderWidth: 1,
-    borderColor: "#dbe3ef",
-    borderRadius: 16,
+    backgroundColor: "#e0ecff",
+    borderRadius: 20,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    minWidth: "48%",
-    flexGrow: 1,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: "#2563eb",
+    marginRight: 8,
+    marginBottom: 8,
   },
   chipText: {
-    color: "#1e293b",
+    color: "#2563eb",
     fontSize: 13,
-    fontWeight: "700",
+    fontWeight: "600",
     lineHeight: 18,
   },
 });

@@ -154,15 +154,25 @@ export default function App() {
 
           <View style={styles.buttonRow}>
             <TouchableOpacity
-              style={[styles.actionButton, styles.primaryButton]}
+              style={[
+                styles.actionButton,
+                styles.primaryButton,
+                loading && styles.buttonDisabled,
+              ]}
               onPress={handleSubmit}
+              disabled={loading}
             >
               <Text style={styles.primaryButtonText}>Get Advice</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.actionButton, styles.secondaryButton]}
+              style={[
+                styles.actionButton,
+                styles.secondaryButton,
+                loading && styles.buttonDisabled,
+              ]}
               onPress={handleClear}
+              disabled={loading}
             >
               <Text style={styles.secondaryButtonText}>Clear</Text>
             </TouchableOpacity>
@@ -185,19 +195,15 @@ export default function App() {
         </SectionCard>
 
         <SectionCard
-          title="Response"
-          subtitle="Structured Georgia-specific guidance will appear here."
+          title="Career Insight"
+          subtitle="Your response will appear here in a clean, readable format."
         >
           {loading ? (
             <View style={styles.loadingWrap}>
               <ActivityIndicator size="large" color="#2563eb" />
               <Text style={styles.loadingText}>Generating advice...</Text>
             </View>
-          ) : response ? (
-            <View style={styles.responseBox}>
-              <Text style={styles.responseText}>{response}</Text>
-            </View>
-          ) : (
+          ) : !response ? (
             <View style={styles.emptyState}>
               <View style={styles.emptyIcon}>
                 <Text style={styles.emptyIconText}>↗</Text>
@@ -207,6 +213,17 @@ export default function App() {
                 Select a profile, choose an interest area, and ask a question to
                 get started.
               </Text>
+            </View>
+          ) : (
+            <View style={styles.responseCard}>
+              <View style={styles.responseHeader}>
+                <View style={styles.responseHeaderBadge}>
+                  <Text style={styles.responseHeaderBadgeText}>AI</Text>
+                </View>
+                <Text style={styles.responseTitle}>Career Insight</Text>
+              </View>
+
+              <Text style={styles.responseText}>{response}</Text>
             </View>
           )}
         </SectionCard>
@@ -349,6 +366,9 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: "#e2e8f0",
   },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   primaryButtonText: {
     color: "#ffffff",
     fontWeight: "800",
@@ -373,18 +393,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: "#475569",
     fontWeight: "600",
-  },
-  responseBox: {
-    backgroundColor: "#f8fafc",
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 16,
-    padding: 16,
-  },
-  responseText: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: "#111827",
   },
   emptyState: {
     alignItems: "center",
@@ -416,5 +424,41 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#64748b",
     lineHeight: 21,
+  },
+  responseCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#dbe3ef",
+  },
+  responseHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  responseHeaderBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: "#dbeafe",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  responseHeaderBadgeText: {
+    color: "#2563eb",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  responseTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  responseText: {
+    fontSize: 15,
+    lineHeight: 24,
+    color: "#334155",
   },
 });
